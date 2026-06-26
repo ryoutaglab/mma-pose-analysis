@@ -51,13 +51,11 @@ YOLOv8のモデルファイル（`yolov8l-pose.pt`）は初回実行時に自動
 ## ファイル構成
 
 ```
-motion/
+mma-pose-analysis/
 ├── pose_analysis_mma.py   # 格闘技特化版（メイン）
-├── pose_analysis3.py      # 正中線解析版
-├── pose_analysis2.py      # 膝関節角度解析版
-├── pose_analysis.py       # 基本版
 ├── sample.mp4             # サンプル動画（別途用意）
-└── README.md
+├── README.md
+└── LICENSE
 ```
 
 ---
