@@ -6,6 +6,8 @@ from datetime import datetime
 from ultralytics import YOLO
 
 # キーポイントインデックス定数（YOLOv8 17点モデル）
+LEFT_EAR       = 3
+RIGHT_EAR      = 4
 LEFT_SHOULDER  = 5
 RIGHT_SHOULDER = 6
 LEFT_HIP       = 11
@@ -19,7 +21,7 @@ SKELETON = [
     [15, 13], [13, 11], [16, 14], [14, 12], [11, 12],
     [5, 11],  [6, 12],  [5, 6],   [5, 7],   [6, 8],
     [7, 9],   [8, 10],  [1, 2],   [0, 1],   [0, 2],
-    [1, 3],   [2, 4],   [3, 5],   [4, 6],
+    [1, 3],   [2, 4],
 ]
 
 # 人物ごとの描画色（BGR）
@@ -39,12 +41,21 @@ def resolve_source(argv):
     return 'sample.mp4'
 
 
+def resolve_max_persons(argv):
+    if len(argv) > 2:
+        try:
+            return max(1, int(argv[2]))
+        except ValueError:
+            pass
+    return MAX_PERSONS
+
+
 def make_output_path(source):
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     if isinstance(source, int):
-        return f'output_mma_{timestamp}.mp4'
+        return f'output_{timestamp}.mp4'
     base, _ = os.path.splitext(source)
-    return f'{base}_mma_{timestamp}.mp4'
+    return f'{base}_{timestamp}.mp4'
 
 
 def draw_person(frame, kp, conf, color):
@@ -78,6 +89,23 @@ def draw_midline(frame, kp, conf):
     cv2.circle(frame, mid_sh,  5, (0, 0, 255), cv2.FILLED)
     cv2.circle(frame, mid_hip, 5, (0, 0, 255), cv2.FILLED)
 
+    # 肩中点から耳への線（両耳→中点、片耳→その耳、両方なし→スキップ）
+    if len(kp) > RIGHT_EAR:
+        l_ok = conf[LEFT_EAR]  > CONF_THRESH and kp[LEFT_EAR][0]  > 0
+        r_ok = conf[RIGHT_EAR] > CONF_THRESH and kp[RIGHT_EAR][0] > 0
+        if l_ok and r_ok:
+            head_pt = (int((kp[LEFT_EAR][0] + kp[RIGHT_EAR][0]) / 2),
+                       int((kp[LEFT_EAR][1] + kp[RIGHT_EAR][1]) / 2))
+        elif l_ok:
+            head_pt = (int(kp[LEFT_EAR][0]),  int(kp[LEFT_EAR][1]))
+        elif r_ok:
+            head_pt = (int(kp[RIGHT_EAR][0]), int(kp[RIGHT_EAR][1]))
+        else:
+            head_pt = None
+        if head_pt is not None:
+            cv2.line(frame, mid_sh, head_pt, (0, 255, 255), 4)
+            cv2.circle(frame, head_pt, 5, (0, 0, 255), cv2.FILLED)
+
 
 def select_top_persons(r, max_n):
     """面積の大きい上位 max_n 人のインデックスを返す"""
@@ -89,8 +117,9 @@ def select_top_persons(r, max_n):
 
 
 def main():
-    source   = resolve_source(sys.argv)
-    out_path = make_output_path(source)
+    source      = resolve_source(sys.argv)
+    max_persons = resolve_max_persons(sys.argv)
+    out_path    = make_output_path(source)
 
     model = YOLO('yolov8l-pose.pt')
     cap   = cv2.VideoCapture(source)
@@ -124,7 +153,7 @@ def main():
                 if r.keypoints is None:
                     continue
 
-                top_idx  = select_top_persons(r, MAX_PERSONS)
+                top_idx  = select_top_persons(r, max_persons)
                 kp_all   = r.keypoints.xy.cpu().numpy()
                 conf_all = (r.keypoints.conf.cpu().numpy()
                             if r.keypoints.conf is not None
