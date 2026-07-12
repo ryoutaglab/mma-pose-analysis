@@ -121,7 +121,7 @@ def main():
     max_persons = resolve_max_persons(sys.argv)
     out_path    = make_output_path(source)
 
-    model = YOLO('yolov8l-pose.pt')
+    model = YOLO('yolo26l-pose.pt')
     cap   = cv2.VideoCapture(source)
 
     fps    = cap.get(cv2.CAP_PROP_FPS) or 30
