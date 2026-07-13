@@ -44,7 +44,7 @@ cd motion
 pip install ultralytics opencv-python numpy
 ```
 
-YOLO26のモデルファイル（`yolo26l-pose.pt`）は初回実行時に自動でダウンロードされます。
+YOLO26のモデルファイル（`yolo26x-pose.pt`）は初回実行時に自動でダウンロードされます。
 
 ---
 
