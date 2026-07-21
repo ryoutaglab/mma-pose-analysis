@@ -295,12 +295,14 @@ def render_persons(canvas, r, boxes, tracker_ids, p1_id, p2_id, last_centers, fr
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('source', nargs='?', default='sample.mp4')
+    parser = argparse.ArgumentParser(
+        description='格闘技特化の姿勢解析ツール（ByteTrackによるP1・P2追跡）')
+    parser.add_argument('source', nargs='?', default='sample.mp4',
+                         help='動画ファイルパス、またはWebカメラ番号（省略時: sample.mp4）')
     parser.add_argument('--track', '-T', action='store_true',
                          help='最初のフレームでP1・P2を手動指定する')
     parser.add_argument('--track-buffer', type=float, default=3.0,
-                         help='ID消失後の補完時間（秒）デフォルト3秒')
+                         help='ID消失後の補完時間（秒）（省略時: 3.0）')
     return parser.parse_args()
 
 
