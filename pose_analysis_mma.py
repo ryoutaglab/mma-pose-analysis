@@ -222,7 +222,7 @@ def manual_select_ids(frame, boxes, tracker_ids):
                         cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
 
     cv2.putText(display_frame,
-                'Click P1 first, then P2. Press Enter to confirm.',
+                'Click P1 first, then P2. Enter to confirm, Esc to redo.',
                 (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
     click_points = []
@@ -245,6 +245,8 @@ def manual_select_ids(frame, boxes, tracker_ids):
         key = cv2.waitKey(1) & 0xFF
         if key == 13 and len(click_points) >= 2:  # Enter
             break
+        if key == 27:  # Esc: クリックをやり直す
+            click_points.clear()
         if key == ord('q'):
             cv2.destroyWindow('Select P1 and P2')
             print('手動指定がキャンセルされました。')
